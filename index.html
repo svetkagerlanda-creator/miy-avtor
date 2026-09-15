@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мій Автор</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">авторський кабінет</div>
+        <h1 id="pageTitle">Сьогодні</h1>
+      </div>
+      <button class="icon-btn" id="themeBtn" title="Тема">☾</button>
+    </header>
+
+    <main>
+      <section class="tab active" id="todayTab">
+        <div class="summary-grid">
+          <article class="summary-card primary">
+            <span>План на сьогодні</span>
+            <strong id="todayProgress">0 / 0</strong>
+            <small>виконано</small>
+          </article>
+          <article class="summary-card">
+            <span>Знаків сьогодні</span>
+            <strong id="todayChars">0</strong>
+            <small>написано</small>
+          </article>
+        </div>
+        <div class="section-head">
+          <h2>Справи</h2>
+          <button class="btn small" data-open="planModal">+ Додати</button>
+        </div>
+        <div id="todayPlans" class="stack"></div>
+      </section>
+
+      <section class="tab" id="calendarTab">
+        <div class="week-strip" id="weekStrip"></div>
+        <div class="section-head">
+          <h2 id="calendarDateTitle">Графік</h2>
+          <button class="btn small" data-open="planModal">+ Подія</button>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="tab" id="booksTab">
+        <div class="section-head">
+          <div>
+            <h2>Мої книги</h2>
+            <p class="muted">Картки творів, прогрес і посилання</p>
+          </div>
+          <button class="btn small" data-open="bookModal">+ Книга</button>
+        </div>
+        <div id="booksGrid" class="books-grid"></div>
+      </section>
+
+      <section class="tab" id="statsTab">
+        <div class="section-head">
+          <div>
+            <h2>Статистика</h2>
+            <p class="muted">Ручне введення або дані зі скріну</p>
+          </div>
+          <button class="btn small" data-open="statsModal">+ Запис</button>
+        </div>
+        <div class="stats-filter card">
+          <select id="statsBookFilter"><option value="all">Усі книги</option></select>
+          <select id="statsPlatformFilter"><option value="all">Усі сайти</option></select>
+        </div>
+        <div id="statsSummary" class="summary-grid"></div>
+        <div id="statsList" class="stack"></div>
+      </section>
+
+      <section class="tab" id="moreTab">
+        <div class="more-grid">
+          <button class="more-card" id="goalsBtn"><span>🎯</span><b>Цілі</b><small>Плани за знаками й дедлайнами</small></button>
+          <button class="more-card" id="ideasBtn"><span>💡</span><b>Ідеї</b><small>Чернетки, нотатки, задумки</small></button>
+          <button class="more-card" id="contentBtn"><span>📣</span><b>Контент-план</b><small>TikTok, Instagram, Telegram</small></button>
+          <button class="more-card" id="exportBtn"><span>⬇️</span><b>Експорт</b><small>Зберегти резервну копію JSON</small></button>
+          <label class="more-card file-card"><span>⬆️</span><b>Імпорт</b><small>Відновити дані з JSON</small><input id="importInput" type="file" accept="application/json" hidden></label>
+          <button class="more-card danger" id="resetBtn"><span>🗑️</span><b>Очистити дані</b><small>Почати з нуля</small></button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="todayTab" data-title="Сьогодні"><span>✓</span><small>Сьогодні</small></button>
+      <button class="nav-btn" data-tab="calendarTab" data-title="Календар"><span>▦</span><small>Календар</small></button>
+      <button class="nav-btn" data-tab="booksTab" data-title="Книги"><span>📚</span><small>Книги</small></button>
+      <button class="nav-btn" data-tab="statsTab" data-title="Статистика"><span>▥</span><small>Статистика</small></button>
+      <button class="nav-btn" data-tab="moreTab" data-title="Ще"><span>☰</span><small>Ще</small></button>
+    </nav>
+  </div>
+
+  <dialog id="planModal" class="modal">
+    <form method="dialog" id="planForm">
+      <div class="modal-head"><h3>Нова справа</h3><button value="cancel" class="icon-btn">×</button></div>
+      <label>Назва<input id="planTitle" required placeholder="Написати главу 12"></label>
+      <label>Книга<select id="planBook"><option value="">Без книги</option></select></label>
+      <div class="two-col"><label>Дата<input id="planDate" type="date" required></label><label>Час<input id="planTime" type="time"></label></div>
+      <label>Тип<select id="planType"><option>Написання</option><option>Редагування</option><option>Публікація</option><option>Соцмережі</option><option>Інше</option></select></label>
+      <label>План знаків<input id="planChars" type="number" min="0" step="100" placeholder="5000"></label>
+      <button class="btn full" value="default">Зберегти</button>
+    </form>
+  </dialog>
+
+  <dialog id="bookModal" class="modal">
+    <form method="dialog" id="bookForm">
+      <div class="modal-head"><h3>Нова книга</h3><button value="cancel" class="icon-btn">×</button></div>
+      <label>Назва<input id="bookTitle" required></label>
+      <label>Анотація<textarea id="bookAnnotation" rows="4"></textarea></label>
+      <div class="two-col"><label>Статус<select id="bookStatus"><option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option></select></label><label>Глав<input id="bookChapters" type="number" min="0" value="0"></label></div>
+      <label>Кількість знаків<input id="bookChars" type="number" min="0" value="0"></label>
+      <label>Обкладинка<input id="bookCover" type="file" accept="image/*"></label>
+      <label>Посилання Букнет<input id="bookBooknet" type="url" placeholder="https://..."></label>
+      <label>Посилання Аркуш<input id="bookArkush" type="url" placeholder="https://..."></label>
+      <label>Інше посилання<input id="bookOther" type="url" placeholder="https://..."></label>
+      <button class="btn full" value="default">Зберегти книгу</button>
+    </form>
+  </dialog>
+
+  <dialog id="statsModal" class="modal">
+    <form method="dialog" id="statsForm">
+      <div class="modal-head"><h3>Додати статистику</h3><button value="cancel" class="icon-btn">×</button></div>
+      <label>Книга<select id="statsBook" required></select></label>
+      <div class="two-col"><label>Сайт<input id="statsPlatform" required placeholder="Букнет"></label><label>Дата<input id="statsDate" type="date" required></label></div>
+      <div class="two-col"><label>Перегляди<input id="statsViews" type="number" min="0"></label><label>Бібліотеки<input id="statsLibraries" type="number" min="0"></label></div>
+      <div class="two-col"><label>Коментарі<input id="statsComments" type="number" min="0"></label><label>Рейтинг<input id="statsRating" type="number" min="0" step="0.1"></label></div>
+      <label>Скрін статистики<input id="statsScreenshot" type="file" accept="image/*"></label>
+      <p class="hint">У v1 скрін зберігається разом із записом. Автоматичне розпізнавання цифр додамо наступною версією.</p>
+      <button class="btn full" value="default">Зберегти статистику</button>
+    </form>
+  </dialog>
+
+  <dialog id="bookViewModal" class="modal wide"><div id="bookViewContent"></div></dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
