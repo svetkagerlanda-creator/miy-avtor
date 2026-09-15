@@ -59,7 +59,14 @@
             <h2>Мої книги</h2>
             <p class="muted">Картки творів, прогрес і посилання</p>
           </div>
-          <button class="btn small" data-open="bookModal">+ Книга</button>
+          <button class="btn small" id="addBookBtn">+ Книга</button>
+        </div>
+        <div class="book-tools card">
+          <input id="bookSearch" type="search" placeholder="Пошук за назвою…">
+          <select id="bookStatusFilter">
+            <option value="all">Усі статуси</option>
+            <option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option>
+          </select>
         </div>
         <div id="booksGrid" class="books-grid"></div>
       </section>
@@ -113,17 +120,43 @@
     </form>
   </dialog>
 
-  <dialog id="bookModal" class="modal">
+  <dialog id="bookAddChoiceModal" class="modal">
+    <div>
+      <div class="modal-head"><h3>Додати книгу</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <p class="muted">Оберіть, як додати книгу.</p>
+      <div class="choice-grid">
+        <button class="choice-card" id="bookManualBtn"><span>✍️</span><b>Вручну</b><small>Заповнити картку самостійно</small></button>
+        <button class="choice-card" id="bookLinkBtn"><span>🔗</span><b>За посиланням</b><small>Спробувати підтягнути дані зі сторінки</small></button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="bookLinkModal" class="modal">
+    <form id="bookLinkForm">
+      <div class="modal-head"><h3>Додати за посиланням</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <label>Посилання на книгу<input id="bookImportUrl" type="url" required placeholder="https://booknet.ua/... або https://arkush.net/..."></label>
+      <p class="hint">Якщо сайт дозволяє — спробую підтягнути назву, анотацію та обкладинку. Якщо ні, посилання все одно збережеться у формі.</p>
+      <button class="btn full" type="submit">Продовжити</button>
+    </form>
+  </dialog>
+
+  <dialog id="bookModal" class="modal wide">
     <form method="dialog" id="bookForm">
-      <div class="modal-head"><h3>Нова книга</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <div class="modal-head"><h3 id="bookModalTitle">Нова книга</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <input id="bookEditId" type="hidden">
       <label>Назва<input id="bookTitle" required></label>
+      <div class="two-col"><label>Псевдонім<input id="bookAuthor" placeholder="Елана Чунту"></label><label>Серія<input id="bookSeries" placeholder="Назва циклу"></label></div>
       <label>Анотація<textarea id="bookAnnotation" rows="4"></textarea></label>
-      <div class="two-col"><label>Статус<select id="bookStatus"><option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option></select></label><label>Глав<input id="bookChapters" type="number" min="0" value="0"></label></div>
-      <label>Кількість знаків<input id="bookChars" type="number" min="0" value="0"></label>
+      <div class="two-col"><label>Жанр<input id="bookGenre" placeholder="Романтика, фентезі…"></label><label>Статус<select id="bookStatus"><option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option></select></label></div>
+      <div class="two-col"><label>Глав<input id="bookChapters" type="number" min="0" value="0"></label><label>План глав<input id="bookTargetChapters" type="number" min="0" placeholder="50"></label></div>
+      <div class="two-col"><label>Кількість знаків<input id="bookChars" type="number" min="0" value="0"></label><label>План знаків<input id="bookTargetChars" type="number" min="0" placeholder="300000"></label></div>
+      <div class="two-col"><label>Дата початку<input id="bookStartDate" type="date"></label><label>План завершення<input id="bookEndDate" type="date"></label></div>
       <label>Обкладинка<input id="bookCover" type="file" accept="image/*"></label>
+      <div id="currentCoverNote" class="hint"></div>
       <label>Посилання Букнет<input id="bookBooknet" type="url" placeholder="https://..."></label>
       <label>Посилання Аркуш<input id="bookArkush" type="url" placeholder="https://..."></label>
       <label>Інше посилання<input id="bookOther" type="url" placeholder="https://..."></label>
+      <label>Примітки<textarea id="bookNotes" rows="3" placeholder="Важливі деталі по проєкту…"></textarea></label>
       <button class="btn full" value="default">Зберегти книгу</button>
     </form>
   </dialog>
