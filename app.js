@@ -135,9 +135,16 @@ async function importBookFromUrl(url){
 
   let found=[];
   try{
+    const target=new URL(url);
     const r=await fetch(url,{mode:'cors',cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
+    // Захист від помилкової відповіді PWA/service worker або редиректу на наш сайт.
+    const responseUrl=new URL(r.url||url);
+    if(responseUrl.origin!==target.origin) throw new Error('Unexpected response origin');
     const html=await r.text();
+    if(/<title>\s*Мій Автор\s*<\/title>/i.test(html) || html.includes('id="bookModal"')){
+      throw new Error('App shell returned instead of remote page');
+    }
     const doc=new DOMParser().parseFromString(html,'text/html');
     const meta=(name,prop=false)=>doc.querySelector(`meta[${prop?'property':'name'}="${name}"]`)?.content?.trim()||'';
     const title=cleanImportedTitle(meta('og:title',true)||meta('twitter:title')||doc.title);
