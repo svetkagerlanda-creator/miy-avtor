@@ -103,7 +103,7 @@
 
   <dialog id="planModal" class="modal">
     <form method="dialog" id="planForm">
-      <div class="modal-head"><h3>Нова справа</h3><button value="cancel" class="icon-btn">×</button></div>
+      <div class="modal-head"><h3>Нова справа</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
       <label>Назва<input id="planTitle" required placeholder="Написати главу 12"></label>
       <label>Книга<select id="planBook"><option value="">Без книги</option></select></label>
       <div class="two-col"><label>Дата<input id="planDate" type="date" required></label><label>Час<input id="planTime" type="time"></label></div>
@@ -115,7 +115,7 @@
 
   <dialog id="bookModal" class="modal">
     <form method="dialog" id="bookForm">
-      <div class="modal-head"><h3>Нова книга</h3><button value="cancel" class="icon-btn">×</button></div>
+      <div class="modal-head"><h3>Нова книга</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
       <label>Назва<input id="bookTitle" required></label>
       <label>Анотація<textarea id="bookAnnotation" rows="4"></textarea></label>
       <div class="two-col"><label>Статус<select id="bookStatus"><option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option></select></label><label>Глав<input id="bookChapters" type="number" min="0" value="0"></label></div>
@@ -130,7 +130,7 @@
 
   <dialog id="statsModal" class="modal">
     <form method="dialog" id="statsForm">
-      <div class="modal-head"><h3>Додати статистику</h3><button value="cancel" class="icon-btn">×</button></div>
+      <div class="modal-head"><h3>Додати статистику</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
       <label>Книга<select id="statsBook" required></select></label>
       <div class="two-col"><label>Сайт<input id="statsPlatform" required placeholder="Букнет"></label><label>Дата<input id="statsDate" type="date" required></label></div>
       <div class="two-col"><label>Перегляди<input id="statsViews" type="number" min="0"></label><label>Бібліотеки<input id="statsLibraries" type="number" min="0"></label></div>

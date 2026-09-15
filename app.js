@@ -12,6 +12,8 @@ $('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save
 $$('.nav-btn').forEach(b=>b.onclick=()=>{$$('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab').forEach(t=>t.classList.remove('active'));$('#'+b.dataset.tab).classList.add('active');$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar()});
 $$('[data-open]').forEach(b=>b.onclick=()=>{prepareForms();$('#'+b.dataset.open).showModal()});
 
+$$('[data-close-dialog]').forEach(b=>b.onclick=()=>b.closest('dialog')?.close());
+
 function fileToDataURL(file){return new Promise((res,rej)=>{if(!file)return res('');const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 
 $('#planForm').addEventListener('submit',e=>{if(e.submitter?.value==='cancel')return; e.preventDefault(); state.plans.push({id:crypto.randomUUID(),title:$('#planTitle').value.trim(),bookId:$('#planBook').value,date:$('#planDate').value,time:$('#planTime').value,type:$('#planType').value,targetChars:+$('#planChars').value||0,done:false}); e.target.reset(); $('#planModal').close(); save()});
