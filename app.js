@@ -70,7 +70,13 @@ function resetBookForm(){
   $('#bookModalTitle').textContent='Нова книга';
   $('#bookChapters').value=0;
   $('#bookChars').value=0;
+  $('#bookTargetChapters').value='';
+  $('#bookTargetChars').value='';
   $('#currentCoverNote').textContent='';
+  const status=$('#bookImportStatus');
+  if(status){ status.hidden=true; status.className='import-status'; status.textContent=''; }
+  const preview=$('#bookCoverPreview');
+  if(preview){ preview.hidden=true; preview.innerHTML=''; }
 }
 
 function openBookForm(book=null){
@@ -95,6 +101,7 @@ function openBookForm(book=null){
     $('#bookOther').value=book.links?.other||'';
     $('#bookNotes').value=book.notes||'';
     $('#currentCoverNote').textContent=book.cover?'Поточна обкладинка збережеться, якщо не обирати нову.':'';
+    if(book.cover){ const preview=$('#bookCoverPreview'); preview.hidden=false; preview.innerHTML=`<img src="${book.cover}" alt="Обкладинка"><span>Поточна обкладинка</span>`; }
   }
   $('#bookModal').showModal();
 }
@@ -118,32 +125,84 @@ async function importBookFromUrl(url){
   if(platform==='booknet') $('#bookBooknet').value=url;
   else if(platform==='arkush') $('#bookArkush').value=url;
   else $('#bookOther').value=url;
+
   $('#bookModalTitle').textContent='Перевірте дані книги';
-  let imported=false;
-  try{
-    const r=await fetch(url,{mode:'cors'});
-    if(r.ok){
-      const html=await r.text();
-      const doc=new DOMParser().parseFromString(html,'text/html');
-      const meta=(name,prop=false)=>doc.querySelector(`meta[${prop?'property':'name'}="${name}"]`)?.content||'';
-      const title=cleanImportedTitle(meta('og:title',true)||doc.title);
-      const desc=meta('og:description',true)||meta('description');
-      const image=meta('og:image',true);
-      if(title) $('#bookTitle').value=title;
-      if(desc) $('#bookAnnotation').value=desc.trim();
-      if(image){
-        const id=crypto.randomUUID();
-        state.booksImportCover={id,url:image};
-        $('#currentCoverNote').textContent='Знайдено обкладинку зі сторінки. Вона буде збережена як зовнішнє зображення.';
-      }
-      imported=Boolean(title||desc||image);
-    }
-  }catch{}
-  if(!imported){
-    $('#currentCoverNote').textContent='Сайт не дозволив автоматично прочитати сторінку. Посилання вже підставлено — заповніть решту даних вручну.';
-  }
+  const status=$('#bookImportStatus');
+  status.hidden=false;
+  status.className='import-status loading';
+  status.textContent=`Пробую отримати дані з ${platform==='booknet'?'Booknet':platform==='arkush'?'Аркуша':'сайту'}…`;
   $('#bookModal').showModal();
+
+  let found=[];
+  try{
+    const r=await fetch(url,{mode:'cors',cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const html=await r.text();
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const meta=(name,prop=false)=>doc.querySelector(`meta[${prop?'property':'name'}="${name}"]`)?.content?.trim()||'';
+    const title=cleanImportedTitle(meta('og:title',true)||meta('twitter:title')||doc.title);
+    const desc=(meta('og:description',true)||meta('description')||meta('twitter:description')).trim();
+    const image=meta('og:image',true)||meta('twitter:image');
+    const author=meta('author');
+
+    if(title){ $('#bookTitle').value=title; found.push('назву'); }
+    if(author){ $('#bookAuthor').value=author; found.push('автора'); }
+    if(desc){ $('#bookAnnotation').value=desc; found.push('анотацію'); }
+    if(image){
+      state.booksImportCover={url:image};
+      const preview=$('#bookCoverPreview');
+      preview.hidden=false;
+      preview.innerHTML=`<img src="${image}" alt="Обкладинка"><span>Обкладинка зі сторінки</span>`;
+      $('#currentCoverNote').textContent='Якщо не обирати файл вручну, буде використана знайдена обкладинка.';
+      found.push('обкладинку');
+    }
+  }catch(err){
+    console.warn('Book import failed:',err);
+  }
+
+  if(found.length){
+    status.className='import-status success';
+    status.textContent=`Знайдено: ${found.join(', ')}. Перевірте дані перед збереженням.`;
+  }else{
+    // Не залишаємо жодних вигаданих значень після невдалого імпорту.
+    $('#bookTitle').value='';
+    $('#bookAuthor').value='';
+    $('#bookSeries').value='';
+    $('#bookAnnotation').value='';
+    $('#bookGenre').value='';
+    $('#bookStatus').value='Ідея';
+    $('#bookChapters').value=0;
+    $('#bookTargetChapters').value='';
+    $('#bookChars').value=0;
+    $('#bookTargetChars').value='';
+    $('#bookStartDate').value='';
+    $('#bookEndDate').value='';
+    $('#bookNotes').value='';
+    status.className='import-status warning';
+    status.textContent=`Не вдалося автоматично прочитати сторінку ${platform==='booknet'?'Booknet':platform==='arkush'?'Аркуша':'сайту'}. Посилання вже збережено у формі — заповніть лише відсутні дані вручну.`;
+    $('#currentCoverNote').textContent='';
+    // Додаткове очищення після можливого автозаповнення браузером.
+    setTimeout(()=>{
+      if(!$('#bookEditId').value && !found.length){
+        $('#bookTitle').value='';
+        $('#bookAuthor').value='';
+        $('#bookSeries').value='';
+        $('#bookAnnotation').value='';
+        $('#bookGenre').value='';
+      }
+    },120);
+  }
 }
+
+
+$('#bookCover').addEventListener('change',e=>{
+  const file=e.target.files?.[0];
+  if(!file)return;
+  const preview=$('#bookCoverPreview');
+  const reader=new FileReader();
+  reader.onload=()=>{preview.hidden=false;preview.innerHTML=`<img src="${reader.result}" alt="Нова обкладинка"><span>Нова обкладинка</span>`};
+  reader.readAsDataURL(file);
+});
 
 $('#addBookBtn').onclick=()=>$('#bookAddChoiceModal').showModal();
 $('#bookManualBtn').onclick=()=>{$('#bookAddChoiceModal').close();openBookForm()};

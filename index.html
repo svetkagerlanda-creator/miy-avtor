@@ -141,10 +141,11 @@
   </dialog>
 
   <dialog id="bookModal" class="modal wide">
-    <form method="dialog" id="bookForm">
+    <form method="dialog" id="bookForm" autocomplete="off">
       <div class="modal-head"><h3 id="bookModalTitle">Нова книга</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
       <input id="bookEditId" type="hidden">
-      <label>Назва<input id="bookTitle" required></label>
+      <div id="bookImportStatus" class="import-status" hidden></div>
+      <label>Назва<input id="bookTitle" name="book-title-field" autocomplete="off" required></label>
       <div class="two-col"><label>Псевдонім<input id="bookAuthor" placeholder="Елана Чунту"></label><label>Серія<input id="bookSeries" placeholder="Назва циклу"></label></div>
       <label>Анотація<textarea id="bookAnnotation" rows="4"></textarea></label>
       <div class="two-col"><label>Жанр<input id="bookGenre" placeholder="Романтика, фентезі…"></label><label>Статус<select id="bookStatus"><option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option></select></label></div>
@@ -152,6 +153,7 @@
       <div class="two-col"><label>Кількість знаків<input id="bookChars" type="number" min="0" value="0"></label><label>План знаків<input id="bookTargetChars" type="number" min="0" placeholder="300000"></label></div>
       <div class="two-col"><label>Дата початку<input id="bookStartDate" type="date"></label><label>План завершення<input id="bookEndDate" type="date"></label></div>
       <label>Обкладинка<input id="bookCover" type="file" accept="image/*"></label>
+      <div id="bookCoverPreview" class="cover-preview" hidden></div>
       <div id="currentCoverNote" class="hint"></div>
       <label>Посилання Букнет<input id="bookBooknet" type="url" placeholder="https://..."></label>
       <label>Посилання Аркуш<input id="bookArkush" type="url" placeholder="https://..."></label>

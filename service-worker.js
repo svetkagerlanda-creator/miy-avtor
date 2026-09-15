@@ -1,4 +1,4 @@
-const CACHE='miy-avtor-v1-0-2';
+const CACHE='miy-avtor-v1.0.3';
 const ASSETS=['./','./index.html','./styles.css','./app.js','./manifest.json','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
