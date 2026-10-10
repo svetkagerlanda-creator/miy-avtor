@@ -133,10 +133,10 @@ function renderCompanions(){
   const button=el.querySelector('.companion-talk');
   const bubble=el.querySelector('.companion-bubble p');
   const theme=document.body.dataset.authorTheme;
-  const extras=COMPANION_EXTRAS[theme]||[];
+  const extras=[...videoReminderLines(),...(COMPANION_EXTRAS[theme]||[])];
   const original=bubble.textContent;
   const themeQuote=AUTHOR_THEMES.find(x=>x.id===theme)?.quote;
-  const lines=[original,...extras,...(themeQuote?[themeQuote]:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const lines=[...videoReminderLines(),original,...extras,...(themeQuote?[themeQuote]:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);
   const key=theme+':'+id+':'+(context==='calendar'?selectedDate:'');
   let index=companionPositions[key]||0;
   index%=lines.length;
@@ -354,8 +354,9 @@ $('#statsBookFilter').onchange=renderStats;$('#statsPlatformFilter').onchange=re
 
 $('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='miy-avtor-backup.json';a.click();URL.revokeObjectURL(a.href)};
 $('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(data&&Array.isArray(data.books)&&Array.isArray(data.plans)&&Array.isArray(data.stats)){Object.assign(state,data);save();alert('Дані відновлено')}else alert('Невірний файл резервної копії')}catch{alert('Не вдалося прочитати файл')}};
-$('#resetBtn').onclick=()=>{if(confirm('Очистити всі дані додатка?')){state.books=[];state.plans=[];state.stats=[];save()}};
-['ideasBtn','contentBtn'].forEach(id=>$('#'+id).onclick=()=>alert('Цей розділ підготуємо у наступній версії.'));
+$('#resetBtn').onclick=()=>{if(confirm('Очистити всі дані додатка?')){state.books=[];state.plans=[];state.stats=[];state.ideas=[];state.videos=[];save()}};
+$('#ideasBtn').onclick=()=>{renderIdeas();$('#ideasModal').showModal()};
+$('#contentBtn').onclick=()=>{renderVideos();$('#contentModal').showModal()};
 
 function renderAll(){setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms();renderCompanions()}
 renderAll();
@@ -391,7 +392,7 @@ async function renderWriting(){const el=$('#writingToday');if(!el)return;const r
 async function renderSOS(){const el=$('#sosAlerts');if(!el)return;const chapters=await storeAll('chapters'),today=localDay();let alerts=[];for(const b of state.books){if(['Завершено','Заморожено','Ідея'].includes(b.status))continue;const pubs=state.plans.filter(p=>p.bookId===b.id&&p.autoPublication&&!p.done).sort((a,z)=>a.date.localeCompare(z.date));if(!pubs.length)continue;const ready=new Set(chapters.filter(c=>c.bookId===b.id&&c.ready).map(c=>c.order));const firstMissing=pubs.find(p=>!ready.has(p.chapterOrder));if(!firstMissing)continue;const gap=Math.ceil((new Date(firstMissing.date+'T12:00:00')-new Date(today+'T12:00:00'))/86400000);if(gap<=7)alerts.push(`<div class="sos-card"><b>🚨 СОС, ДИБІЛ, СКОРО КІНЕЦЬ СВІТУ!</b><p>«${escapeHtml(b.title)}»: глава ${firstMissing.chapterOrder} ще не готова. ${gap<0?'Публікація прострочена!':gap===0?'Публікація сьогодні!':`До виходу ${gap} дн.`}</p></div>`)}el.innerHTML=alerts.join('')}
 // Резервна копія включає нові рукописи та статистику написання.
 $('#exportBtn').onclick=async()=>downloadJSON({...state,manuscriptChapters:await storeAll('chapters'),writingHistory:await storeAll('writing'),backupVersion:2},'miy-avtor-backup-v2.json');
-$('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.books)||!Array.isArray(data.plans)||!Array.isArray(data.stats))throw Error('Невірний формат');if(!confirm('Імпорт замінить поточні книги, плани й статистику. Продовжити?'))return;for(const c of data.manuscriptChapters||[])await storePut('chapters',c);for(const w of data.writingHistory||[])await storePut('writing',w);for(const k of ['books','plans','stats','theme','authorTheme'])if(data[k]!==undefined)state[k]=data[k];save();refreshAuthorWidgets();alert('Дані відновлено')}catch(err){alert('Не вдалося імпортувати: '+err.message)}};
+$('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.books)||!Array.isArray(data.plans)||!Array.isArray(data.stats))throw Error('Невірний формат');if(!confirm('Імпорт замінить поточні книги, плани й статистику. Продовжити?'))return;for(const c of data.manuscriptChapters||[])await storePut('chapters',c);for(const w of data.writingHistory||[])await storePut('writing',w);for(const k of ['books','plans','stats','theme','authorTheme','ideas','videos'])if(data[k]!==undefined)state[k]=data[k];save();refreshAuthorWidgets();alert('Дані відновлено')}catch(err){alert('Не вдалося імпортувати: '+err.message)}};
 refreshAuthorWidgets().catch(err=>console.error('Помилка локальної бази',err));
 
 // Повертаємо останнє місце після перезавантаження, не змінюючи дані книг.
@@ -402,3 +403,36 @@ refreshAuthorWidgets().catch(err=>console.error('Помилка локально
  if(last.bookId&&state.books.some(b=>b.id===last.bookId)&&$('#readerModal')){await openManuscript(last.bookId);if(last.chapterId){const chapters=await storeAll('chapters');if(chapters.some(c=>c.id===last.chapterId&&c.bookId===last.bookId))await openChapter(last.chapterId)}}
  }catch(e){console.warn('Відновлення місця не вдалося',e)}
 })();
+
+// Ідеї та контент-план: дані зберігаються локально разом з іншими даними застосунку.
+state.ideas ||= [];
+state.videos ||= [];
+const ideaForm=$('#ideaForm'),videoForm=$('#videoForm');
+function renderIdeas(){
+ const q=$('#ideaSearch').value.toLocaleLowerCase('uk-UA');
+ const items=[...state.ideas].filter(x=>(x.title+' '+x.text).toLocaleLowerCase('uk-UA').includes(q)).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.created.localeCompare(a.created));
+ $('#ideasList').innerHTML=items.map(x=>`<article class="author-entry"><div class="entry-heading"><b>${x.pinned?'📌 ':''}${escapeHtml(x.title)}</b><span class="muted">${escapeHtml(x.status)}</span></div><p class="entry-text">${escapeHtml(x.text)}</p><small class="muted">${escapeHtml(x.created.slice(0,10))}</small><div class="entry-actions"><button class="btn small secondary" data-editidea="${x.id}">Редагувати</button><button class="btn small secondary" data-pinidea="${x.id}">${x.pinned?'Відкріпити':'Закріпити'}</button><button class="btn small secondary" data-delidea="${x.id}">Видалити</button></div></article>`).join('')||'<div class="empty">Нотаток поки немає.</div>';
+ $$('[data-editidea]').forEach(b=>b.onclick=()=>{const x=state.ideas.find(i=>i.id===b.dataset.editidea);$('#ideaId').value=x.id;$('#ideaTitle').value=x.title;$('#ideaText').value=x.text;$('#ideaStatus').value=x.status;$('#ideaPinned').checked=!!x.pinned;$('#ideaEditor').hidden=false});
+ $$('[data-pinidea]').forEach(b=>b.onclick=()=>{const x=state.ideas.find(i=>i.id===b.dataset.pinidea);x.pinned=!x.pinned;save();renderIdeas()});
+ $$('[data-delidea]').forEach(b=>b.onclick=()=>{if(!confirm('Видалити нотатку?'))return;state.ideas=state.ideas.filter(i=>i.id!==b.dataset.delidea);save();renderIdeas()});
+}
+$('#ideaNew').onclick=()=>{ideaForm.reset();$('#ideaId').value='';$('#ideaEditor').hidden=false};
+$('#ideaCancel').onclick=()=>{$('#ideaEditor').hidden=true};
+$('#ideaSearch').oninput=renderIdeas;
+ideaForm.onsubmit=e=>{e.preventDefault();const id=$('#ideaId').value;const prev=state.ideas.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),title:$('#ideaTitle').value.trim(),text:$('#ideaText').value,status:$('#ideaStatus').value,pinned:$('#ideaPinned').checked,created:prev?.created||new Date().toISOString()};if(prev)Object.assign(prev,item);else state.ideas.push(item);save();$('#ideaEditor').hidden=true;renderIdeas()};
+function renderVideos(){
+ const platform=$('#videoFilter').value;
+ const items=[...state.videos].filter(x=>platform==='all'||x.platform===platform).sort((a,b)=>b.date.localeCompare(a.date));
+ $('#videoList').innerHTML=items.map(x=>`<article class="author-entry"><div class="entry-heading"><b>${x.platform==='youtube'?'▶️ YouTube':'🎵 TikTok'} · ${escapeHtml(x.title)}</b><span class="muted">${escapeHtml(x.date)}</span></div><p>${x.published?'✅ Опубліковано':'🗓️ Заплановано'}</p><a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Відкрити відео ↗</a><div class="entry-actions"><button class="btn small secondary" data-editvideo="${x.id}">Редагувати</button><button class="btn small secondary" data-delvideo="${x.id}">Видалити</button></div></article>`).join('')||'<div class="empty">Відео ще не додані.</div>';
+ $$('[data-editvideo]').forEach(b=>b.onclick=()=>{const x=state.videos.find(i=>i.id===b.dataset.editvideo);$('#videoId').value=x.id;$('#videoPlatform').value=x.platform;$('#videoTitle').value=x.title;$('#videoUrl').value=x.url;$('#videoDate').value=x.date;$('#videoPublished').checked=x.published;$('#videoEditor').hidden=false});
+ $$('[data-delvideo]').forEach(b=>b.onclick=()=>{if(!confirm('Видалити запис відео?'))return;state.videos=state.videos.filter(i=>i.id!==b.dataset.delvideo);save();renderVideos()});
+}
+$('#videoNew').onclick=()=>{videoForm.reset();$('#videoId').value='';$('#videoDate').value=localISO(new Date());$('#videoEditor').hidden=false};
+$('#videoCancel').onclick=()=>{$('#videoEditor').hidden=true};
+$('#videoFilter').onchange=renderVideos;
+videoForm.onsubmit=e=>{e.preventDefault();const id=$('#videoId').value,prev=state.videos.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),platform:$('#videoPlatform').value,title:$('#videoTitle').value.trim(),url:$('#videoUrl').value.trim(),date:$('#videoDate').value,published:$('#videoPublished').checked};if(prev)Object.assign(prev,item);else state.videos.push(item);save();$('#videoEditor').hidden=true;renderVideos()};
+const PLATFORM_REMINDERS={youtube:['YouTube вже десять днів без відео! Камера в тебе ще жива?!','Твій YouTube-канал уже почав писати заяву про зникнення авторки!'],tiktok:['ТікТок десять днів без тебе! Алгоритм уже викликає екзорциста!','Де новий TikTok?! Я тут старію швидше за мумію!']};
+function videoReminderLines(){
+ const today=localISO(new Date());
+ return ['youtube','tiktok'].flatMap(platform=>{const dates=state.videos.filter(v=>v.platform===platform&&v.published&&v.date<=today).map(v=>v.date).sort();if(!dates.length)return [];const gap=Math.floor((dayDate(today)-dayDate(dates.at(-1)))/86400000);return gap>=10?PLATFORM_REMINDERS[platform]:[]});
+}

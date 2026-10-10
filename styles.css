@@ -78,3 +78,6 @@ body[data-author-theme="death"] .theme-section{background-image:radial-gradient(
 .companion-art img{object-fit:contain;object-position:bottom center;height:100%;width:100%;min-height:0;filter:none}
 .companion-bubble{align-self:center;margin:0 0 35px -12px;border-radius:24px 24px 24px 5px;box-shadow:0 8px 22px #0002}
 @media(max-width:500px){.companion-stage{min-height:245px}.companion-art{height:250px;min-width:120px;width:43%}.companion-bubble{margin-bottom:25px}}
+
+/* Нотатки та контент-план */
+.author-entry{padding:16px;margin:12px 0;border:1px solid var(--green, #38a);border-radius:16px;background:var(--card,transparent);overflow-wrap:anywhere}.entry-heading,.entry-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.entry-actions{justify-content:flex-start;margin:12px 0}.entry-text{white-space:pre-wrap;line-height:1.6}.author-form{padding:14px;margin:12px 0;border:1px solid var(--green,#38a);border-radius:16px}.author-form label{display:block;margin:10px 0}.author-form input:not([type=checkbox]),.author-form textarea,.author-form select{width:100%;max-width:100%;box-sizing:border-box}.author-form .check-row{display:flex;align-items:center;gap:10px}.author-form .check-row input{width:auto}.author-form[hidden]{display:none!important}
