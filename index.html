@@ -45,11 +45,10 @@
       </section>
 
       <section class="tab" id="calendarTab">
-        <div class="card" style="margin-bottom:14px"><h3>Автографік виходу глав</h3><label>Книга<select id="scheduleBook"></select></label><div class="two-col"><label>Перша публікація<input id="scheduleStart" type="date"></label><label>Час<input id="scheduleTime" type="time" value="19:00"></label></div><div class="two-col"><label>Періодичність<select id="scheduleFrequency"><option value="1">Щодня</option><option value="2">Через день</option><option value="3">Раз на три дні</option></select></label><label>Кількість глав<input id="scheduleCount" type="number" min="1" max="500" value="20"></label></div><button class="btn" id="makeSchedule" type="button">Створити графік</button><p class="hint">Наявні публікації цієї книги будуть замінені. Інші події залишаться.</p></div><div class="week-strip" id="weekStrip"></div>
-        <div class="section-head">
-          <h2 id="calendarDateTitle">Графік</h2>
-          <button class="btn small" data-open="planModal">+ Подія</button>
-        </div>
+        <div class="calendar-actions"><button class="btn" id="calendarAdd">+ Додати подію або графік</button><div class="calendar-views"><button type="button" class="btn secondary small" data-calview="month">Місяць</button><button type="button" class="btn secondary small" data-calview="week">Тиждень</button><button type="button" class="btn secondary small" data-calview="day">День</button></div></div>
+        <div class="calendar-nav"><button class="btn secondary small" id="calendarPrev">←</button><b id="calendarRange"></b><button class="btn secondary small" id="calendarNext">→</button><button class="btn secondary small" id="calendarToday">Сьогодні</button></div>
+        <div id="calendarGrid"></div>
+        <div class="section-head"><h2 id="calendarDateTitle">Події</h2><button class="btn small" id="calendarAddSecond">+ Додати</button></div>
         <div class="timeline" id="timeline"></div>
       </section>
 
@@ -110,13 +109,14 @@
 
   <dialog id="planModal" class="modal">
     <form method="dialog" id="planForm">
-      <div class="modal-head"><h3>Нова справа</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <div class="modal-head"><h3 id="planModalTitle">Додати подію</h3><button type="button" class="icon-btn" data-close-dialog>×</button></div>
+      <input type="hidden" id="planEditId"><div class="mode-tabs"><button type="button" class="btn small" id="modeEvent">Одна подія</button><button type="button" class="btn secondary small" id="modeSchedule">Графік публікацій</button></div><div id="singleEventFields">
       <label>Назва<input id="planTitle" required placeholder="Написати главу 12"></label>
       <label>Книга<select id="planBook"><option value="">Без книги</option></select></label>
       <div class="two-col"><label>Дата<input id="planDate" type="date" required></label><label>Час<input id="planTime" type="time"></label></div>
       <label>Тип<select id="planType"><option>Написання</option><option>Редагування</option><option>Публікація</option><option>Соцмережі</option><option>Інше</option></select></label>
       <label>План знаків<input id="planChars" type="number" min="0" step="100" placeholder="5000"></label>
-      <button class="btn full" value="default">Зберегти</button>
+      </div><div id="scheduleFields" hidden><label>Книга<select id="scheduleBook"></select></label><div class="two-col"><label>Перша публікація<input id="scheduleStart" type="date"></label><label>Час<input id="scheduleTime" type="time" value="19:00"></label></div><div class="two-col"><label>Періодичність<select id="scheduleFrequency"><option value="1">Щодня</option><option value="2">Через день</option><option value="3">Раз на три дні</option></select></label><label>Кількість глав<input id="scheduleCount" type="number" min="1" max="500" value="20"></label></div><label>Почати з номера глави<input id="scheduleFirstChapter" type="number" min="1" value="1"></label><p class="hint">Новий графік додається до календаря. Події на той самий час не видаляються.</p></div><button class="btn full" id="planSubmit" type="submit">Зберегти</button>
     </form>
   </dialog>
 
