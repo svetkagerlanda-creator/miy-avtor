@@ -41,11 +41,11 @@
           <h2>Справи</h2>
           <button class="btn small" data-open="planModal">+ Додати</button>
         </div>
-        <div id="todayPlans" class="stack"></div>
+        <div id="sosAlerts" class="stack"></div><div id="writingToday" class="card" style="margin:12px 0"></div><div id="todayPlans" class="stack"></div>
       </section>
 
       <section class="tab" id="calendarTab">
-        <div class="week-strip" id="weekStrip"></div>
+        <div class="card" style="margin-bottom:14px"><h3>Автографік виходу глав</h3><label>Книга<select id="scheduleBook"></select></label><div class="two-col"><label>Перша публікація<input id="scheduleStart" type="date"></label><label>Час<input id="scheduleTime" type="time" value="19:00"></label></div><div class="two-col"><label>Періодичність<select id="scheduleFrequency"><option value="1">Щодня</option><option value="2">Через день</option><option value="3">Раз на три дні</option></select></label><label>Кількість глав<input id="scheduleCount" type="number" min="1" max="500" value="20"></label></div><button class="btn" id="makeSchedule" type="button">Створити графік</button><p class="hint">Наявні публікації цієї книги будуть замінені. Інші події залишаться.</p></div><div class="week-strip" id="weekStrip"></div>
         <div class="section-head">
           <h2 id="calendarDateTitle">Графік</h2>
           <button class="btn small" data-open="planModal">+ Подія</button>
@@ -68,7 +68,7 @@
             <option>Ідея</option><option>Пишеться</option><option>Редагується</option><option>Публікується</option><option>Завершено</option><option>Заморожено</option>
           </select>
         </div>
-        <div id="booksGrid" class="books-grid"></div>
+        <div id="booksGrid" class="books-grid"></div><div class="card" style="margin-top:14px"><h3>Рукописи та читання</h3><p class="muted">Вибери книгу, щоб читати, писати глави або виправляти текст. Оригінали зберігаються окремо.</p><div id="manuscriptBooks"></div></div>
       </section>
 
       <section class="tab" id="statsTab">
@@ -176,7 +176,7 @@
     </form>
   </dialog>
 
-  <dialog id="bookViewModal" class="modal wide"><div id="bookViewContent"></div></dialog>
+  <dialog id="readerModal" class="modal wide"><div class="modal-head"><h3 id="readerTitle">Рукопис</h3><button type="button" class="icon-btn" id="readerClose">×</button></div><div id="chapterList"></div><div id="readerPanel" hidden><div class="reader-toolbar"><button type="button" class="btn secondary" id="readerBack">← Глави</button><button type="button" class="btn secondary" id="readerMode">Режим: читання</button><button type="button" class="btn secondary" id="readerExport">↓ Правки</button></div><h3 id="chapterTitle"></h3><div id="readerText" class="reader-text"></div><textarea id="readerEditor" class="reader-editor" hidden></textarea><div id="readerCounts" class="hint"></div><div id="readerDiff" class="reader-diff"></div></div></dialog><dialog id="bookViewModal" class="modal wide"><div id="bookViewContent"></div></dialog>
 
   <script src="app.js"></script>
   <script>
