@@ -71,3 +71,10 @@ body[data-author-theme="death"] .theme-section{background-image:radial-gradient(
 .companion-label{display:block;color:var(--green);font-size:11px;font-weight:800;line-height:1.35}.companion-bubble p{font-size:clamp(13px,3.4vw,17px);font-weight:750;line-height:1.4;margin:9px 0}.companion-talk{border:0;background:var(--green2);color:var(--text);border-radius:20px;padding:7px 11px;font-size:12px;cursor:pointer}
 .theme-portrait{height:170px;object-position:center 23%}.theme-choice{padding:8px 8px 13px}.theme-choice .theme-name,.theme-choice small,.theme-choice .theme-swatches{margin-left:5px}
 @media(max-width:380px){.companion-stage{min-height:190px}.companion-art{min-width:105px}.companion-art img{min-height:185px}.companion-bubble{padding:10px}.theme-portrait{height:130px}}
+
+/* 2.6.2: cutout anime companion, no framed illustration */
+.companion-stage{align-items:flex-end;min-height:300px;margin:20px 0 28px;gap:0}
+.companion-art{overflow:visible;mask-image:none;border-radius:0;min-width:125px;max-width:255px;align-self:flex-end;height:310px;filter:drop-shadow(0 14px 12px #0004)}
+.companion-art img{object-fit:contain;object-position:bottom center;height:100%;width:100%;min-height:0;filter:none}
+.companion-bubble{align-self:center;margin:0 0 35px -12px;border-radius:24px 24px 24px 5px;box-shadow:0 8px 22px #0002}
+@media(max-width:500px){.companion-stage{min-height:245px}.companion-art{height:250px;min-width:120px;width:43%}.companion-bubble{margin-bottom:25px}}

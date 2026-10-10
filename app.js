@@ -112,9 +112,36 @@ function companionMarkup(context){
  const relevant=context==='calendar'?state.plans.filter(p=>p.date===selectedDate):state.plans.filter(p=>p.date===today);
  let msg=context==='books'?lines.books:context==='stats'?lines.stats:relevant.length?lines.busy:lines.empty;
  if(context==='today'&&future.length){const next=future[0];const days=Math.round((dayDate(next.date)-dayDate(today))/86400000);if(days<=1)msg=`${days===0?'СЬОГОДНІ':'ЗАВТРА'}: ${next.title}! ${lines.busy}`}
- return `<div class="companion-art"><img src="./characters/${t.id}.webp" alt="${t.name}" loading="lazy"></div><div class="companion-bubble"><span class="companion-label">✦ Твій авторський друг · ${t.name}</span><p>${escapeHtml(msg)}</p><button type="button" class="companion-talk">Ще репліку ↻</button></div>`;
+ return `<div class="companion-art"><img src="./characters/${t.id}-friend.png" alt="${t.name}" loading="lazy"></div><div class="companion-bubble"><span class="companion-label">✦ Твій авторський друг · ${t.name}</span><p>${escapeHtml(msg)}</p><button type="button" class="companion-talk">Ще репліку ↻</button></div>`;
 }
-function renderCompanions(){for(const [id,context] of [['calendarMascot','calendar'],['todayCompanion','today'],['booksCompanion','books'],['statsCompanion','stats']]){const el=$('#'+id);if(!el)continue;el.className='companion-stage';el.innerHTML=companionMarkup(context);el.querySelector('.companion-talk').onclick=()=>{const t=document.body.dataset.authorTheme;const q=AUTHOR_THEMES.find(x=>x.id===t)?.quote||'';el.querySelector('.companion-bubble p').textContent=q}}}
+const COMPANION_EXTRAS={
+ grandma:['Ану руки від прокрастинації прибрала!','Бабця вже чай допила, а глава де?','Пиши, сонечко, поки зомбі не прийшли на редактуру!'],
+ vampire:['Музу знесилило від дефіциту сюжету!','Мені терміново потрібна нова глава. І селера.','Сюжетний поворот? Я аж смузі розлив!'],
+ madness:['КОРОНА Є. ПЛАН Є. А ДЕ ТЕКСТ?!','Оголошую надзвичайний стан у королівстві дедлайнів!','Ще одна глава — і я дозволю тобі п’ять хвилин хаосу.'],
+ death:['Я взяла лікарняний, але дедлайн не погодився.','Косу на полицю, ручку в руки.','Не змушуй мене оформляти свідоцтво про смерть сюжету.'],
+ mummy:['Мій саркофаг бачив більше завершених чернеток.','Кава. Вода. Глава. Саме в такому порядку.','Я воскресла заради дедлайну. А ти?'],
+ demoness:['МЕНІ ПОТРІБНА ГЛАВА, А НЕ ВИПРАВДАННЯ!','ЩЕ ОДНА ПУСТА СТОРІНКА — І Я ЗАКРИЧУ!','Нерви закінчилися. Починай писати!']
+};
+const companionPositions={};
+function renderCompanions(){
+ for(const [id,context] of [['calendarMascot','calendar'],['todayCompanion','today'],['booksCompanion','books'],['statsCompanion','stats']]){
+  const el=$('#'+id);if(!el)continue;
+  el.className='companion-stage';el.innerHTML=companionMarkup(context);
+  const button=el.querySelector('.companion-talk');
+  const bubble=el.querySelector('.companion-bubble p');
+  const theme=document.body.dataset.authorTheme;
+  const extras=COMPANION_EXTRAS[theme]||[];
+  const original=bubble.textContent;
+  const themeQuote=AUTHOR_THEMES.find(x=>x.id===theme)?.quote;
+  const lines=[original,...extras,...(themeQuote?[themeQuote]:[])].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const key=theme+':'+id+':'+(context==='calendar'?selectedDate:'');
+  let index=companionPositions[key]||0;
+  index%=lines.length;
+  bubble.textContent=lines[index];
+  button.textContent='🎭 Ще одну дурницю ↻';
+  button.onclick=()=>{index=(index+1)%lines.length;companionPositions[key]=index;bubble.textContent=lines[index]};
+ }
+}
 $('#calendarPrev').onclick=()=>moveCalendar(-1);
 $('#calendarNext').onclick=()=>moveCalendar(1);
 $('#calendarToday').onclick=()=>{selectedDate=todayISO();renderCalendar()};
