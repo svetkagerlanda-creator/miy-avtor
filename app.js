@@ -30,7 +30,10 @@ function setTheme(){
 }
 $('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save()};
 
-$$('.nav-btn').forEach(b=>b.onclick=()=>{$$('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab').forEach(t=>t.classList.remove('active'));$('#'+b.dataset.tab).classList.add('active');$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar();renderCompanions()});
+const NAV_KEY='miyAvtorNavigationV1';
+function rememberLocation(){try{sessionStorage.setItem(NAV_KEY,JSON.stringify({tab:document.querySelector('.nav-btn.active')?.dataset.tab||'todayTab',date:selectedDate,bookId:currentBookId||'',chapterId:currentChapterId||''}))}catch(e){console.warn('Не вдалося зберегти навігацію',e)}}
+function activateTab(b){if(!b)return;$$('.nav-btn').forEach(x=>x.classList.toggle('active',x===b));$$('.tab').forEach(t=>t.classList.toggle('active',t.id===b.dataset.tab));$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar();renderCompanions();rememberLocation()}
+$$('.nav-btn').forEach(b=>b.onclick=()=>activateTab(b));
 $$('[data-open]').forEach(b=>b.onclick=()=>{if(b.dataset.open==='planModal')openCalendarForm();else{prepareForms();$('#'+b.dataset.open).showModal()}});
 
 $$('[data-close-dialog]').forEach(b=>b.onclick=()=>b.closest('dialog')?.close());
@@ -87,7 +90,7 @@ const localISO=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String
 const dayDate=iso=>new Date(iso+'T12:00:00');
 function renderCalendar(){
  const strip=$('#weekStrip');
- if(strip){const base=dayDate(selectedDate),monday=new Date(base);monday.setDate(base.getDate()-(base.getDay()+6)%7);strip.innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);const iso=localISO(d),total=state.plans.filter(p=>p.date===iso).length;return `<button type="button" class="day-chip ${iso===selectedDate?'active':''}" data-weekdate="${iso}"><small>${d.toLocaleDateString('uk-UA',{weekday:'short'})}</small><b>${d.getDate()}</b>${total?`<small>${total} под.</small>`:''}</button>`}).join('');$$('[data-weekdate]').forEach(b=>b.onclick=()=>{selectedDate=b.dataset.weekdate;renderCalendar()})}
+ if(strip){const base=dayDate(selectedDate),monday=new Date(base);monday.setDate(base.getDate()-(base.getDay()+6)%7);strip.innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);const iso=localISO(d),total=state.plans.filter(p=>p.date===iso).length;return `<button type="button" class="day-chip ${iso===selectedDate?'active':''}" data-weekdate="${iso}"><small>${d.toLocaleDateString('uk-UA',{weekday:'short'})}</small><b>${d.getDate()}</b>${total?`<small>${total} под.</small>`:''}</button>`}).join('');$$('[data-weekdate]').forEach(b=>b.onclick=()=>{selectedDate=b.dataset.weekdate;renderCalendar();rememberLocation()})}
  const d=dayDate(selectedDate);
  $('#calendarRange').textContent=d.toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
  $('#calendarDateTitle').textContent='Події на '+d.toLocaleDateString('uk-UA',{day:'numeric',month:'long'});
@@ -144,8 +147,8 @@ function renderCompanions(){
 }
 $('#calendarPrev').onclick=()=>moveCalendar(-1);
 $('#calendarNext').onclick=()=>moveCalendar(1);
-$('#calendarToday').onclick=()=>{selectedDate=todayISO();renderCalendar()};
-function moveCalendar(dir){const d=dayDate(selectedDate);d.setDate(d.getDate()+dir);selectedDate=localISO(d);renderCalendar()}
+$('#calendarToday').onclick=()=>{selectedDate=todayISO();renderCalendar();rememberLocation()};
+function moveCalendar(dir){const d=dayDate(selectedDate);d.setDate(d.getDate()+dir);selectedDate=localISO(d);renderCalendar();rememberLocation()}
 $('#calendarAdd').onclick=()=>openCalendarForm();$('#calendarAddSecond').onclick=()=>openCalendarForm();
 let bookFilterStatus='all';
 let bookSearchText='';
@@ -368,10 +371,10 @@ const localDay=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth
 let currentBookId='',currentChapterId='',editing=false,saveTimer=null,lastSavedText='',draftNew=false;
 function downloadJSON(data,name){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 async function renderManuscriptBooks(){const el=$('#manuscriptBooks');if(!el)return;const chapters=await storeAll('chapters');el.innerHTML=state.books.map(b=>`<div class="manuscript-row"><span>${escapeHtml(b.title)} <small class="muted">(${chapters.filter(c=>c.bookId===b.id).length} глав)</small></span><button class="btn small" data-manuscript="${b.id}">Відкрити</button></div>`).join('')||'<p class="muted">Спочатку додай книгу.</p>';el.querySelectorAll('[data-manuscript]').forEach(btn=>btn.onclick=()=>openManuscript(btn.dataset.manuscript))}
-async function openManuscript(id){currentBookId=id;$('#readerTitle').textContent=bookName(id);$('#readerModal').showModal();await showChapters()}
+async function openManuscript(id){currentBookId=id;rememberLocation();$('#readerTitle').textContent=bookName(id);$('#readerModal').showModal();await showChapters()}
 async function showChapters(){clearTimeout(saveTimer);$('#readerPanel').hidden=true;$('#chapterList').hidden=false;const chapters=(await storeAll('chapters')).filter(c=>c.bookId===currentBookId).sort((a,b)=>a.order-b.order);$('#chapterList').innerHTML=`<div class="reader-toolbar"><button class="btn" id="newChapter">+ Написати главу</button><label class="btn secondary" style="cursor:pointer">Імпорт TXT <input id="chapterImport" type="file" accept=".txt,text/plain" hidden multiple></label><button class="btn secondary" id="exportBookEdits">↓ Усі правки</button></div>`+chapters.map(c=>`<div class="manuscript-row"><span>${escapeHtml(c.title)} <small class="muted">${fmt(charCount(c.edited??c.original))} ЗбП · ${c.ready?'готова':'чернетка'}</small></span><div><button class="btn small secondary" data-ready="${c.id}">${c.ready?'✓ Готова':'○ Готова?'}</button> <button class="btn small" data-chapter="${c.id}">Читати</button></div></div>`).join('');$('#newChapter').onclick=()=>createChapter();$('#chapterImport').onchange=async e=>{const existing=(await storeAll('chapters')).filter(c=>c.bookId===currentBookId);let n=existing.length;for(const f of e.target.files){const t=await f.text();await storePut('chapters',{id:crypto.randomUUID(),bookId:currentBookId,order:++n,title:f.name.replace(/\.txt$/i,''),original:t,edited:null,ready:true,createdAt:new Date().toISOString()})}await showChapters();refreshAuthorWidgets()};$('#exportBookEdits').onclick=async()=>{const all=(await storeAll('chapters')).filter(c=>c.bookId===currentBookId).map(c=>({title:c.title,original:c.original,edited:c.edited,changed:c.edited!==null&&c.edited!==c.original}));downloadJSON({book:bookName(currentBookId),chapters:all},'pravky-knyhy.json')};$('#chapterList').querySelectorAll('[data-chapter]').forEach(b=>b.onclick=()=>openChapter(b.dataset.chapter));$('#chapterList').querySelectorAll('[data-ready]').forEach(b=>b.onclick=async()=>{const c=(await storeAll('chapters')).find(x=>x.id===b.dataset.ready);c.ready=!c.ready;await storePut('chapters',c);await showChapters();refreshAuthorWidgets()})}
 async function createChapter(){const chapters=(await storeAll('chapters')).filter(c=>c.bookId===currentBookId);const title=prompt('Назва глави:',`Розділ ${chapters.length+1}`);if(!title)return;const c={id:crypto.randomUUID(),bookId:currentBookId,order:chapters.length+1,title,original:'',edited:null,ready:false,createdAt:new Date().toISOString(),newWriting:true};await storePut('chapters',c);await openChapter(c.id,true)}
-async function openChapter(id,write=false){const c=(await storeAll('chapters')).find(x=>x.id===id);if(!c)return;currentChapterId=id;draftNew=!!c.newWriting;$('#chapterList').hidden=true;$('#readerPanel').hidden=false;$('#chapterTitle').textContent=c.title;lastSavedText=c.edited??c.original;$('#readerEditor').value=lastSavedText;editing=false;setEditorMode(write);updateReaderCounts();$('#readerDiff').textContent='';$('#readerText').textContent=lastSavedText||'Поки немає тексту.'}
+async function openChapter(id,write=false){const c=(await storeAll('chapters')).find(x=>x.id===id);if(!c)return;currentChapterId=id;rememberLocation();draftNew=!!c.newWriting;$('#chapterList').hidden=true;$('#readerPanel').hidden=false;$('#chapterTitle').textContent=c.title;lastSavedText=c.edited??c.original;$('#readerEditor').value=lastSavedText;editing=false;setEditorMode(write);updateReaderCounts();$('#readerDiff').textContent='';$('#readerText').textContent=lastSavedText||'Поки немає тексту.'}
 function setEditorMode(v){editing=v;$('#readerEditor').hidden=!v;$('#readerText').hidden=v;$('#readerMode').textContent=v?'Режим: редагування':'Режим: читання';if(!v)$('#readerText').textContent=$('#readerEditor').value||'Поки немає тексту.'}
 function updateReaderCounts(){const text=$('#readerEditor').value;$('#readerCounts').textContent=`${fmt(charCount(text))} знаків із пробілами · ${fmt(text.trim()?text.trim().split(/\s+/).length:0)} слів`}
 async function persistChapter(){clearTimeout(saveTimer);const c=(await storeAll('chapters')).find(x=>x.id===currentChapterId);if(!c)return;const next=$('#readerEditor').value;if(next===lastSavedText)return;const previous=lastSavedText;lastSavedText=next;c.edited=next;await storePut('chapters',c);if(c.newWriting){ // Підраховуємо лише додані знаки, без повторного обліку вставленого раніше тексту.
@@ -379,7 +382,7 @@ let prefix=0;while(prefix<previous.length&&prefix<next.length&&previous[prefix]=
 $('#readerEditor').addEventListener('input',()=>{updateReaderCounts();clearTimeout(saveTimer);saveTimer=setTimeout(()=>persistChapter().catch(console.error),500)});
 $('#readerMode').onclick=async()=>{if(editing)await persistChapter();setEditorMode(!editing)};
 $('#readerBack').onclick=async()=>{await persistChapter();await showChapters()};
-$('#readerClose').onclick=async()=>{await persistChapter();$('#readerModal').close()};
+$('#readerClose').onclick=async()=>{await persistChapter();$('#readerModal').close();currentBookId='';currentChapterId='';rememberLocation()};
 $('#readerExport').onclick=async()=>{await persistChapter();const c=(await storeAll('chapters')).find(x=>x.id===currentChapterId);downloadJSON({book:bookName(c.bookId),chapter:c.title,original:c.original,edited:c.edited,changesPresent:c.edited!==null&&c.edited!==c.original},'pravky-glavy.json')};
 $('#readerModal').addEventListener('cancel',e=>{e.preventDefault();$('#readerClose').click()});
 function fillScheduleBooks(){const el=$('#scheduleBook');const prev=el.value;el.innerHTML=state.books.map(b=>`<option value="${b.id}">${escapeHtml(b.title)}</option>`).join('');if(state.books.some(b=>b.id===prev))el.value=prev}
@@ -390,3 +393,12 @@ async function renderSOS(){const el=$('#sosAlerts');if(!el)return;const chapters
 $('#exportBtn').onclick=async()=>downloadJSON({...state,manuscriptChapters:await storeAll('chapters'),writingHistory:await storeAll('writing'),backupVersion:2},'miy-avtor-backup-v2.json');
 $('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.books)||!Array.isArray(data.plans)||!Array.isArray(data.stats))throw Error('Невірний формат');if(!confirm('Імпорт замінить поточні книги, плани й статистику. Продовжити?'))return;for(const c of data.manuscriptChapters||[])await storePut('chapters',c);for(const w of data.writingHistory||[])await storePut('writing',w);for(const k of ['books','plans','stats','theme','authorTheme'])if(data[k]!==undefined)state[k]=data[k];save();refreshAuthorWidgets();alert('Дані відновлено')}catch(err){alert('Не вдалося імпортувати: '+err.message)}};
 refreshAuthorWidgets().catch(err=>console.error('Помилка локальної бази',err));
+
+// Повертаємо останнє місце після перезавантаження, не змінюючи дані книг.
+(async function restoreNavigation(){
+ try{const last=JSON.parse(sessionStorage.getItem(NAV_KEY)||'null');if(!last)return;
+ if(/^\d{4}-\d{2}-\d{2}$/.test(last.date||''))selectedDate=last.date;
+ const button=$$('.nav-btn').find(b=>b.dataset.tab===last.tab);if(button)activateTab(button);
+ if(last.bookId&&state.books.some(b=>b.id===last.bookId)&&$('#readerModal')){await openManuscript(last.bookId);if(last.chapterId){const chapters=await storeAll('chapters');if(chapters.some(c=>c.id===last.chapterId&&c.bookId===last.bookId))await openChapter(last.chapterId)}}
+ }catch(e){console.warn('Відновлення місця не вдалося',e)}
+})();
