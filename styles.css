@@ -54,3 +54,11 @@ body[data-author-theme="grandma"] .theme-section{background-image:radial-gradien
 body[data-author-theme="vampire"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#39b9c625,transparent 38%)}
 body[data-author-theme="madness"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#e95a7525,transparent 38%)}
 body[data-author-theme="death"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#648ee425,transparent 38%)}
+
+/* 2.5 anime characters and calendar placement */
+.theme-portrait{display:block;width:100%;height:138px;object-fit:cover;object-position:center 40%;border-radius:12px;margin-bottom:6px;background:var(--card)}
+.theme-choice{overflow:hidden}.theme-choice.selected{outline:1px solid var(--green)}
+.calendar-mascot{display:flex;align-items:center;gap:14px;margin:18px 0 22px;padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.calendar-mascot>img{width:110px;height:138px;flex:none;object-fit:cover;object-position:center 40%;border-radius:13px}
+.mascot-message{min-width:0;overflow-wrap:anywhere}.mascot-message strong{color:var(--green);font-size:1rem}.mascot-message p{font-size:.9rem;line-height:1.5;margin:8px 0 0;font-weight:650}
+@media(max-width:390px){.calendar-mascot>img{width:92px;height:118px}.theme-portrait{height:110px}.calendar-mascot{gap:9px;padding:9px}}

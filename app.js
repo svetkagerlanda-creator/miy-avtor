@@ -21,10 +21,11 @@ function setTheme(){
   document.body.dataset.authorTheme=id;
   $('#themeBtn').textContent=old?'☀':'☾';
   const gallery=$('#themeGallery');
-  if(gallery){gallery.innerHTML=AUTHOR_THEMES.map(t=>`<button type="button" class="theme-choice ${t.id===id?'selected':''}" data-theme-choice="${t.id}" aria-pressed="${t.id===id}"><span class="theme-mascot" aria-hidden="true">${t.icon}</span><span class="theme-name">${t.name}</span><small>${t.sub}</small><span class="theme-swatches"><i style="background:${t.color}"></i><i></i><i></i></span></button>`).join('');
+  if(gallery){gallery.innerHTML=AUTHOR_THEMES.map(t=>`<button type="button" class="theme-choice ${t.id===id?'selected':''}" data-theme-choice="${t.id}" aria-pressed="${t.id===id}"><img class="theme-portrait" src="./characters/${t.id}.webp" alt="Аніме-персонаж: ${t.name}" loading="lazy"><span class="theme-name">${t.name}</span><small>${t.sub}</small><span class="theme-swatches"><i style="background:${t.color}"></i><i></i><i></i></span></button>`).join('');
     gallery.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{state.authorTheme=b.dataset.themeChoice;save()});
-    $('#themeCatchphrase').textContent='📢 '+AUTHOR_THEMES.find(t=>t.id===id).quote;
+  
   }
+  renderCalendarMascot();
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',getComputedStyle(document.body).getPropertyValue('--green').trim()||'#278a57');
 }
 $('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save()};
@@ -95,6 +96,7 @@ function renderCalendar(){
  $$('[data-edit-event]').forEach(b=>b.onclick=()=>{const p=state.plans.find(x=>x.id===b.dataset.editEvent);if(p)openCalendarForm('event',p)});
  $$('[data-remove-event]').forEach(b=>b.onclick=()=>{if(confirm('Видалити цю подію?')){state.plans=state.plans.filter(p=>p.id!==b.dataset.removeEvent);save()}});
 }
+function renderCalendarMascot(){const el=$('#calendarMascot');if(!el)return;const t=AUTHOR_THEMES.find(t=>t.id===document.body.dataset.authorTheme)||AUTHOR_THEMES[0];el.innerHTML=`<img src="./characters/${t.id}.webp" alt="${t.name}"><div class="mascot-message"><strong>${t.name}</strong><p>📢 ${t.quote}</p></div>`;}
 $('#calendarPrev').onclick=()=>moveCalendar(-1);
 $('#calendarNext').onclick=()=>moveCalendar(1);
 $('#calendarToday').onclick=()=>{selectedDate=todayISO();renderCalendar()};
@@ -305,7 +307,7 @@ $('#statsBookFilter').onchange=renderStats;$('#statsPlatformFilter').onchange=re
 $('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='miy-avtor-backup.json';a.click();URL.revokeObjectURL(a.href)};
 $('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(data&&Array.isArray(data.books)&&Array.isArray(data.plans)&&Array.isArray(data.stats)){Object.assign(state,data);save();alert('Дані відновлено')}else alert('Невірний файл резервної копії')}catch{alert('Не вдалося прочитати файл')}};
 $('#resetBtn').onclick=()=>{if(confirm('Очистити всі дані додатка?')){state.books=[];state.plans=[];state.stats=[];save()}};
-['goalsBtn','ideasBtn','contentBtn'].forEach(id=>$('#'+id).onclick=()=>alert('Цей розділ підготуємо у наступній версії.'));
+['ideasBtn','contentBtn'].forEach(id=>$('#'+id).onclick=()=>alert('Цей розділ підготуємо у наступній версії.'));
 
 function renderAll(){setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms()}
 renderAll();
