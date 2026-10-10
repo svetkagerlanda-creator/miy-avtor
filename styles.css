@@ -19,3 +19,38 @@ body.dark .import-status.warning{background:#332a16;color:#f1cd7a;border-color:#
 
 /* Calendar 2.1 */
 .calendar-actions,.calendar-nav,.calendar-views,.mode-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.calendar-actions{justify-content:space-between}.calendar-nav{justify-content:center}.calendar-nav b{flex:1;text-align:center;text-transform:capitalize}.calendar-views .active{background:#228b5e;color:white}.calendar-grid{overflow:hidden}.cal-weekdays,.cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.cal-weekdays span{text-align:center;font-size:12px;padding:8px 0;color:var(--muted,#777)}.cal-day{border:1px solid #b1b1b144;border-radius:10px;min-height:92px;padding:5px;min-width:0}.cal-day.selected{outline:2px solid #228b5e}.cal-day.is-today .cal-day-title{background:#228b5e;color:#fff}.cal-day-title{border:0;background:transparent;border-radius:6px;padding:4px 8px;cursor:pointer;color:inherit}.cal-events{display:grid;gap:3px}.cal-event{display:block;width:100%;text-align:left;min-width:0;padding:5px;border:0;border-radius:5px;background:#228b5e20;color:inherit;cursor:pointer;font-size:11px;overflow-wrap:anywhere}.cal-event small{display:block;opacity:.7}.cal-event span{font-weight:700}.cal-more{border:0;background:transparent;color:#228b5e;cursor:pointer}.calendar-grid.week .cal-days{grid-template-columns:repeat(7,minmax(0,1fr))}.calendar-grid.day .cal-days{grid-template-columns:1fr}.calendar-grid.day .cal-day{min-height:130px}.cal-list-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #8883;padding:10px 0}.cal-list-item small{display:block;color:var(--muted,#888)}.cal-list-item>div:last-child{display:flex;gap:5px}#scheduleFields[hidden],#singleEventFields[hidden]{display:none!important}@media(max-width:700px){.cal-day{min-height:66px;padding:2px}.cal-day-title{font-size:11px;padding:3px}.cal-event{font-size:9px;padding:3px}.cal-event span{display:block}.calendar-grid.week .cal-days{grid-template-columns:1fr}.calendar-grid.week .cal-day{min-height:75px}.calendar-actions .btn{font-size:12px}.cal-list-item{align-items:flex-start}.cal-list-item>div:last-child{flex-shrink:0}}
+
+/* Мій Автор 2.3: six fully bundled, offline-ready fantasy themes. */
+body[data-author-theme="grandma"]{--bg:#e9f8f0;--card:#fafffc;--text:#203b34;--muted:#627c72;--green:#21876e;--green2:#c9f3df;--line:#b5dfcb;--danger:#b84257;--shadow:0 8px 24px #27795b16}
+body[data-author-theme="vampire"]{--bg:#e5f9fa;--card:#f8ffff;--text:#173c49;--muted:#5c7c84;--green:#078d9a;--green2:#c1f0f0;--line:#a5dce0;--danger:#c64b63;--shadow:0 8px 24px #067e9516}
+body[data-author-theme="madness"]{--bg:#fff0f0;--card:#fffafa;--text:#4d2535;--muted:#906674;--green:#c43150;--green2:#ffccd6;--line:#f0b5c2;--danger:#a31c35;--shadow:0 8px 24px #aa24411a}
+body[data-author-theme="death"]{--bg:#eaf1ff;--card:#fbfdff;--text:#1c3157;--muted:#667d9e;--green:#356cc4;--green2:#d2e3ff;--line:#b9cee9;--danger:#bc4762;--shadow:0 8px 24px #254a9818}
+body[data-author-theme="mummy"]{--bg:#f6eee2;--card:#fffaf2;--text:#463123;--muted:#8c7661;--green:#98613b;--green2:#ead6ba;--line:#dec8aa;--danger:#b44840;--shadow:0 8px 24px #724c281a}
+body[data-author-theme="demoness"]{--bg:#f3edff;--card:#fcfaff;--text:#36264d;--muted:#85749a;--green:#7851b5;--green2:#e4d5ff;--line:#d5c1ef;--danger:#b4436e;--shadow:0 8px 24px #63369b18}
+body.dark[data-author-theme="grandma"]{--bg:#0c1b17;--card:#152b23;--text:#e2fff0;--muted:#9bbcad;--green:#62ddb0;--green2:#214b3a;--line:#305d49;--shadow:none}
+body.dark[data-author-theme="vampire"]{--bg:#081c23;--card:#102b33;--text:#e1fcff;--muted:#99b9c2;--green:#4cdbdf;--green2:#15454b;--line:#26616a;--shadow:none}
+body.dark[data-author-theme="madness"]{--bg:#200e1a;--card:#321625;--text:#ffe9f0;--muted:#c5a1ad;--green:#ff718c;--green2:#57263c;--line:#70344a;--shadow:none}
+body.dark[data-author-theme="death"]{--bg:#0c1528;--card:#172540;--text:#e9f2ff;--muted:#a5b7d5;--green:#80b4ff;--green2:#203c65;--line:#324b72;--shadow:none}
+body.dark[data-author-theme="mummy"]{--bg:#20160f;--card:#342419;--text:#fff0db;--muted:#c6a98c;--green:#e1aa76;--green2:#563c28;--line:#6d4d35;--shadow:none}
+body.dark[data-author-theme="demoness"]{--bg:#171024;--card:#271b3b;--text:#f3eaff;--muted:#b5a3cc;--green:#c19aff;--green2:#463063;--line:#604781;--shadow:none}
+/* Keep contrasting button labels even when accent becomes pale in dark mode. */
+body.dark .btn:not(.secondary):not(.danger-btn),body.dark .day-chip.active,body.dark .summary-card.primary{color:#10151b}
+body.dark .nav-btn.active{color:var(--green)}
+body .calendar-views .active,body .cal-day.is-today .cal-day-title{background:var(--green);color:#fff}
+body .cal-day.selected{outline-color:var(--green)}body .cal-more{color:var(--green)}body .cal-event{background:var(--green2)}
+.theme-section{margin-bottom:20px;padding:16px;border:1px solid var(--line);border-radius:22px;background:var(--card)}
+.theme-section h2{margin:0 0 8px;font-size:20px}.theme-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.theme-choice{position:relative;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:14px 12px;border:2px solid var(--line);border-radius:18px;background:var(--bg);color:var(--text);cursor:pointer;transition:transform .15s,border-color .15s}
+.theme-choice:active{transform:scale(.98)}.theme-choice.selected{border-color:var(--green);box-shadow:0 0 0 2px var(--green2)}.theme-choice.selected:after{content:'✓';position:absolute;right:10px;top:10px;color:var(--green);font-weight:900}
+.theme-mascot{font-size:34px;line-height:1.2}.theme-name{font-weight:850;font-size:14px}.theme-choice small{font-size:11px;color:var(--muted)}.theme-swatches{display:flex;gap:5px;margin-top:4px}.theme-swatches i{width:22px;height:12px;border-radius:5px;border:1px solid #7773}.theme-swatches i:nth-child(2){background:var(--card)}.theme-swatches i:nth-child(3){background:var(--text)}
+.theme-quote{margin:14px 0 0;padding:12px;background:var(--green2);color:var(--text);border-radius:12px;font-weight:750;font-size:12px;line-height:1.5}
+@media(min-width:600px){.theme-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.theme-choice{transition:none}}
+
+/* Character-specific accents, all local and offline */
+body[data-author-theme="mummy"] .theme-section{background-image:radial-gradient(circle at 95% 6%,#bb98552a,transparent 38%)}
+body[data-author-theme="demoness"] .theme-section{background-image:radial-gradient(circle at 92% 6%,#b856b92a,transparent 38%)}
+body[data-author-theme="grandma"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#58a78425,transparent 38%)}
+body[data-author-theme="vampire"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#39b9c625,transparent 38%)}
+body[data-author-theme="madness"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#e95a7525,transparent 38%)}
+body[data-author-theme="death"] .theme-section{background-image:radial-gradient(circle at 95% 5%,#648ee425,transparent 38%)}

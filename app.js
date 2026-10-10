@@ -6,8 +6,28 @@ const todayISO=()=>new Date().toISOString().slice(0,10);
 const fmt=n=>new Intl.NumberFormat('uk-UA').format(Number(n||0));
 const escapeHtml=s=>(s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
-function setTheme(){document.body.classList.toggle('dark',state.theme==='dark');$('#themeBtn').textContent=state.theme==='dark'?'☀':'☾'}
-$('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save();setTheme()};
+const AUTHOR_THEMES=[
+{id:'grandma',name:'Бабка-зомбі',icon:'🧟‍♀️',color:'#55d6ac',sub:'М’ятна · цвинтарний шик',quote:'ВСТАВАЙ, НЕЖИТЬ! ГЛАВИ САМІ СЕБЕ НЕ НАПИШУТЬ!'},
+{id:'vampire',name:'Вампір-веган',icon:'🧛',color:'#20c7cb',sub:'Бірюзова · готичний смузі',quote:'МУЗА ЗНЕПРИТОМНІЛА ВІД ДЕФІЦИТУ СЮЖЕТУ!'},
+{id:'madness',name:'Богиня безумства',icon:'👑',color:'#ed4962',sub:'Червона · королівський хаос',quote:'ТИ БОГИНЯ ХАОСУ, АЛЕ ДЕ НОВА ГЛАВА?!'},
+{id:'death',name:'Смерть на лікарняному',icon:'💀',color:'#5899f4',sub:'Синя · похмурий офіс',quote:'Я НА ЛІКАРНЯНОМУ, А ТВОЯ КНИГА В РЕАНІМАЦІЇ!'},
+{id:'mummy',name:'Мумія з похмілля',icon:'🧻',color:'#b77a4b',sub:'Коричнева · піщане похмілля',quote:'Я ПРОСПАЛА ТРИ ТИСЯЧІ РОКІВ, А ТИ ДОСІ НЕ ДОПИСАЛА ГЛАВУ?!'},
+{id:'demoness',name:'Демонеса з нервовим зривом',icon:'😈',color:'#a77bfa',sub:'Фіолетова · пекельна істерика',quote:'У МЕНЕ НЕРВОВИЙ ЗРИВ, А В ТЕБЕ ЗРИВ ДЕДЛАЙНУ! ДЕ ГЛАВА?!'}
+];
+function setTheme(){
+  const old=state.theme==='dark';document.body.classList.toggle('dark',old);
+  const migratedTheme={cookie:'mummy',dragon:'demoness'}[state.authorTheme]||state.authorTheme;
+  const id=AUTHOR_THEMES.some(t=>t.id===migratedTheme)?migratedTheme:'grandma';
+  document.body.dataset.authorTheme=id;
+  $('#themeBtn').textContent=old?'☀':'☾';
+  const gallery=$('#themeGallery');
+  if(gallery){gallery.innerHTML=AUTHOR_THEMES.map(t=>`<button type="button" class="theme-choice ${t.id===id?'selected':''}" data-theme-choice="${t.id}" aria-pressed="${t.id===id}"><span class="theme-mascot" aria-hidden="true">${t.icon}</span><span class="theme-name">${t.name}</span><small>${t.sub}</small><span class="theme-swatches"><i style="background:${t.color}"></i><i></i><i></i></span></button>`).join('');
+    gallery.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{state.authorTheme=b.dataset.themeChoice;save()});
+    $('#themeCatchphrase').textContent='📢 '+AUTHOR_THEMES.find(t=>t.id===id).quote;
+  }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',getComputedStyle(document.body).getPropertyValue('--green').trim()||'#278a57');
+}
+$('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save()};
 
 $$('.nav-btn').forEach(b=>b.onclick=()=>{$$('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab').forEach(t=>t.classList.remove('active'));$('#'+b.dataset.tab).classList.add('active');$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar()});
 $$('[data-open]').forEach(b=>b.onclick=()=>{if(b.dataset.open==='planModal')openCalendarForm();else{prepareForms();$('#'+b.dataset.open).showModal()}});
