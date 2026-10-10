@@ -1,5 +1,7 @@
 const KEY='miyAvtorV1';
 const state=JSON.parse(localStorage.getItem(KEY)||'null')||{books:[],plans:[],stats:[],theme:'light'};
+state.ideas ||= [];
+state.videos ||= [];
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(state));renderAll()};
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);

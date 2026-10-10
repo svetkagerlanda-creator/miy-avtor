@@ -1,4 +1,4 @@
-const CACHE='miy-avtor-v2.7.1';
+const CACHE='miy-avtor-v2.7.2';
 const ASSETS=['./','./index.html','./styles.css','./app.js','./manifest.json','./icon-192.png','./icon-512.png','./characters/grandma.webp','./characters/vampire.webp','./characters/madness.webp','./characters/death.webp','./characters/mummy.webp','./characters/demoness.webp','./characters/grandma-friend.png','./characters/vampire-friend.png','./characters/madness-friend.png','./characters/death-friend.png','./characters/mummy-friend.png','./characters/demoness-friend.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
