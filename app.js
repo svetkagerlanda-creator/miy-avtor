@@ -108,6 +108,11 @@ const COMPANION_LINES={
  mummy:{empty:'Я проспала три тисячі років. Ти теж?',busy:'Плани є. Тепер би каву й виконати їх.',books:'Навіть папіруси дописували швидше!',stats:'Ці цифри треба відсвяткувати... водичкою.'},
  demoness:{empty:'У МЕНЕ НЕРВОВИЙ ЗРИВ, А В ТЕБЕ ЗРИВ ДЕДЛАЙНУ! ДЕ ГЛАВА?!',busy:'Дедлайни є. НЕРВИ НЕ ВИТРИМАЮТЬ!',books:'Ти пишеш книгу чи випробовуєш мої нерви?!',stats:'Цифри! Мені потрібні гарні цифри!'}
 };
+const PLATFORM_REMINDERS={youtube:['YouTube вже десять днів без відео! Камера в тебе ще жива?!','Твій YouTube-канал уже почав писати заяву про зникнення авторки!'],tiktok:['ТікТок десять днів без тебе! Алгоритм уже викликає екзорциста!','Де новий TikTok?! Я тут старію швидше за мумію!']};
+function videoReminderLines(){
+ const today=localISO(new Date());
+ return ['youtube','tiktok'].flatMap(platform=>{const dates=state.videos.filter(v=>v.platform===platform&&v.published&&v.date<=today).map(v=>v.date).sort();if(!dates.length)return [];const gap=Math.floor((dayDate(today)-dayDate(dates.at(-1)))/86400000);return gap>=10?PLATFORM_REMINDERS[platform]:[]});
+}
 function companionMarkup(context){
  const t=AUTHOR_THEMES.find(t=>t.id===document.body.dataset.authorTheme)||AUTHOR_THEMES[0];
  const lines=COMPANION_LINES[t.id],today=localISO(new Date());
@@ -358,7 +363,7 @@ $('#resetBtn').onclick=()=>{if(confirm('Очистити всі дані дод�
 $('#ideasBtn').onclick=()=>{renderIdeas();$('#ideasModal').showModal()};
 $('#contentBtn').onclick=()=>{renderVideos();$('#contentModal').showModal()};
 
-function renderAll(){setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms();renderCompanions()}
+function renderAll(){state.ideas ||= [];state.videos ||= [];setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms();renderCompanions()}
 renderAll();
 
 
@@ -412,27 +417,23 @@ function renderIdeas(){
  const q=$('#ideaSearch').value.toLocaleLowerCase('uk-UA');
  const items=[...state.ideas].filter(x=>(x.title+' '+x.text).toLocaleLowerCase('uk-UA').includes(q)).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.created.localeCompare(a.created));
  $('#ideasList').innerHTML=items.map(x=>`<article class="author-entry"><div class="entry-heading"><b>${x.pinned?'📌 ':''}${escapeHtml(x.title)}</b><span class="muted">${escapeHtml(x.status)}</span></div><p class="entry-text">${escapeHtml(x.text)}</p><small class="muted">${escapeHtml(x.created.slice(0,10))}</small><div class="entry-actions"><button class="btn small secondary" data-editidea="${x.id}">Редагувати</button><button class="btn small secondary" data-pinidea="${x.id}">${x.pinned?'Відкріпити':'Закріпити'}</button><button class="btn small secondary" data-delidea="${x.id}">Видалити</button></div></article>`).join('')||'<div class="empty">Нотаток поки немає.</div>';
- $$('[data-editidea]').forEach(b=>b.onclick=()=>{const x=state.ideas.find(i=>i.id===b.dataset.editidea);$('#ideaId').value=x.id;$('#ideaTitle').value=x.title;$('#ideaText').value=x.text;$('#ideaStatus').value=x.status;$('#ideaPinned').checked=!!x.pinned;$('#ideaEditor').hidden=false});
+ $$('[data-editidea]').forEach(b=>b.onclick=()=>{const x=state.ideas.find(i=>i.id===b.dataset.editidea);$('#ideaId').value=x.id;$('#ideaTitle').value=x.title;$('#ideaText').value=x.text;$('#ideaStatus').value=x.status;$('#ideaPinned').checked=!!x.pinned;$('#ideaForm').hidden=false});
  $$('[data-pinidea]').forEach(b=>b.onclick=()=>{const x=state.ideas.find(i=>i.id===b.dataset.pinidea);x.pinned=!x.pinned;save();renderIdeas()});
  $$('[data-delidea]').forEach(b=>b.onclick=()=>{if(!confirm('Видалити нотатку?'))return;state.ideas=state.ideas.filter(i=>i.id!==b.dataset.delidea);save();renderIdeas()});
 }
-$('#ideaNew').onclick=()=>{ideaForm.reset();$('#ideaId').value='';$('#ideaEditor').hidden=false};
-$('#ideaCancel').onclick=()=>{$('#ideaEditor').hidden=true};
+$('#ideaNew').onclick=()=>{ideaForm.reset();$('#ideaId').value='';$('#ideaForm').hidden=false};
+$('#ideaCancel').onclick=()=>{$('#ideaForm').hidden=true};
 $('#ideaSearch').oninput=renderIdeas;
-ideaForm.onsubmit=e=>{e.preventDefault();const id=$('#ideaId').value;const prev=state.ideas.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),title:$('#ideaTitle').value.trim(),text:$('#ideaText').value,status:$('#ideaStatus').value,pinned:$('#ideaPinned').checked,created:prev?.created||new Date().toISOString()};if(prev)Object.assign(prev,item);else state.ideas.push(item);save();$('#ideaEditor').hidden=true;renderIdeas()};
+ideaForm.onsubmit=e=>{e.preventDefault();const id=$('#ideaId').value;const prev=state.ideas.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),title:$('#ideaTitle').value.trim(),text:$('#ideaText').value,status:$('#ideaStatus').value,pinned:$('#ideaPinned').checked,created:prev?.created||new Date().toISOString()};if(prev)Object.assign(prev,item);else state.ideas.push(item);save();$('#ideaForm').hidden=true;renderIdeas()};
 function renderVideos(){
  const platform=$('#videoFilter').value;
  const items=[...state.videos].filter(x=>platform==='all'||x.platform===platform).sort((a,b)=>b.date.localeCompare(a.date));
  $('#videoList').innerHTML=items.map(x=>`<article class="author-entry"><div class="entry-heading"><b>${x.platform==='youtube'?'▶️ YouTube':'🎵 TikTok'} · ${escapeHtml(x.title)}</b><span class="muted">${escapeHtml(x.date)}</span></div><p>${x.published?'✅ Опубліковано':'🗓️ Заплановано'}</p><a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Відкрити відео ↗</a><div class="entry-actions"><button class="btn small secondary" data-editvideo="${x.id}">Редагувати</button><button class="btn small secondary" data-delvideo="${x.id}">Видалити</button></div></article>`).join('')||'<div class="empty">Відео ще не додані.</div>';
- $$('[data-editvideo]').forEach(b=>b.onclick=()=>{const x=state.videos.find(i=>i.id===b.dataset.editvideo);$('#videoId').value=x.id;$('#videoPlatform').value=x.platform;$('#videoTitle').value=x.title;$('#videoUrl').value=x.url;$('#videoDate').value=x.date;$('#videoPublished').checked=x.published;$('#videoEditor').hidden=false});
+ $$('[data-editvideo]').forEach(b=>b.onclick=()=>{const x=state.videos.find(i=>i.id===b.dataset.editvideo);$('#videoId').value=x.id;$('#videoPlatform').value=x.platform;$('#videoTitle').value=x.title;$('#videoUrl').value=x.url;$('#videoDate').value=x.date;$('#videoPublished').checked=x.published;$('#videoForm').hidden=false});
  $$('[data-delvideo]').forEach(b=>b.onclick=()=>{if(!confirm('Видалити запис відео?'))return;state.videos=state.videos.filter(i=>i.id!==b.dataset.delvideo);save();renderVideos()});
 }
-$('#videoNew').onclick=()=>{videoForm.reset();$('#videoId').value='';$('#videoDate').value=localISO(new Date());$('#videoEditor').hidden=false};
-$('#videoCancel').onclick=()=>{$('#videoEditor').hidden=true};
+$('#videoNew').onclick=()=>{videoForm.reset();$('#videoId').value='';$('#videoDate').value=localISO(new Date());$('#videoForm').hidden=false};
+$('#videoCancel').onclick=()=>{$('#videoForm').hidden=true};
 $('#videoFilter').onchange=renderVideos;
-videoForm.onsubmit=e=>{e.preventDefault();const id=$('#videoId').value,prev=state.videos.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),platform:$('#videoPlatform').value,title:$('#videoTitle').value.trim(),url:$('#videoUrl').value.trim(),date:$('#videoDate').value,published:$('#videoPublished').checked};if(prev)Object.assign(prev,item);else state.videos.push(item);save();$('#videoEditor').hidden=true;renderVideos()};
-const PLATFORM_REMINDERS={youtube:['YouTube вже десять днів без відео! Камера в тебе ще жива?!','Твій YouTube-канал уже почав писати заяву про зникнення авторки!'],tiktok:['ТікТок десять днів без тебе! Алгоритм уже викликає екзорциста!','Де новий TikTok?! Я тут старію швидше за мумію!']};
-function videoReminderLines(){
- const today=localISO(new Date());
- return ['youtube','tiktok'].flatMap(platform=>{const dates=state.videos.filter(v=>v.platform===platform&&v.published&&v.date<=today).map(v=>v.date).sort();if(!dates.length)return [];const gap=Math.floor((dayDate(today)-dayDate(dates.at(-1)))/86400000);return gap>=10?PLATFORM_REMINDERS[platform]:[]});
-}
+videoForm.onsubmit=e=>{e.preventDefault();const id=$('#videoId').value,prev=state.videos.find(x=>x.id===id);const item={id:id||crypto.randomUUID(),platform:$('#videoPlatform').value,title:$('#videoTitle').value.trim(),url:$('#videoUrl').value.trim(),date:$('#videoDate').value,published:$('#videoPublished').checked};if(prev)Object.assign(prev,item);else state.videos.push(item);save();$('#videoForm').hidden=true;renderVideos()};
+
