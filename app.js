@@ -25,12 +25,12 @@ function setTheme(){
     gallery.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{state.authorTheme=b.dataset.themeChoice;save()});
   
   }
-  renderCalendarMascot();
+  renderCompanions();
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',getComputedStyle(document.body).getPropertyValue('--green').trim()||'#278a57');
 }
 $('#themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save()};
 
-$$('.nav-btn').forEach(b=>b.onclick=()=>{$$('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab').forEach(t=>t.classList.remove('active'));$('#'+b.dataset.tab).classList.add('active');$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar()});
+$$('.nav-btn').forEach(b=>b.onclick=()=>{$$('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab').forEach(t=>t.classList.remove('active'));$('#'+b.dataset.tab).classList.add('active');$('#pageTitle').textContent=b.dataset.title;if(b.dataset.tab==='calendarTab')renderCalendar();renderCompanions()});
 $$('[data-open]').forEach(b=>b.onclick=()=>{if(b.dataset.open==='planModal')openCalendarForm();else{prepareForms();$('#'+b.dataset.open).showModal()}});
 
 $$('[data-close-dialog]').forEach(b=>b.onclick=()=>b.closest('dialog')?.close());
@@ -94,9 +94,27 @@ function renderCalendar(){
  const plans=state.plans.filter(p=>p.date===selectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
  $('#timeline').innerHTML=plans.length?plans.map(p=>`<div class="cal-list-item"><div><b>${escapeHtml(p.time||'Без часу')} · ${escapeHtml(p.title)}</b><small>${escapeHtml(bookName(p.bookId))}</small></div><div><button class="btn small secondary" data-edit-event="${p.id}">Змінити</button><button class="btn small secondary" data-remove-event="${p.id}">×</button></div></div>`).join(''):'<p class="muted">На цей день подій немає.</p>';
  $$('[data-edit-event]').forEach(b=>b.onclick=()=>{const p=state.plans.find(x=>x.id===b.dataset.editEvent);if(p)openCalendarForm('event',p)});
+ renderCompanions();
  $$('[data-remove-event]').forEach(b=>b.onclick=()=>{if(confirm('Видалити цю подію?')){state.plans=state.plans.filter(p=>p.id!==b.dataset.removeEvent);save()}});
 }
-function renderCalendarMascot(){const el=$('#calendarMascot');if(!el)return;const t=AUTHOR_THEMES.find(t=>t.id===document.body.dataset.authorTheme)||AUTHOR_THEMES[0];el.innerHTML=`<img src="./characters/${t.id}.webp" alt="${t.name}"><div class="mascot-message"><strong>${t.name}</strong><p>📢 ${t.quote}</p></div>`;}
+const COMPANION_LINES={
+ grandma:{empty:'Ну що, письменнице, чай заварила? А глави хто писатиме?',busy:'Ого, справи є! Бабця пишається, але перевірить!',books:'Книги самі себе не допишуть, золотце!',stats:'Я ще жива... майже. А твої перегляди ростуть?'},
+ vampire:{empty:'Мій смузі закінчився. А де свіженький сюжет?',busy:'Дедлайни смачніші за буряковий смузі!',books:'Кров не п’ю, але нові глави обожнюю.',stats:'Статистика має бути соковитою, як мій смузі.'},
+ madness:{empty:'ТИ БОГИНЯ ХАОСУ, АЛЕ ДЕ НОВА ГЛАВА?!',busy:'Хаос запланований? Оце вже королівський рівень!',books:'Кожна книга — окреме королівство безумства!',stats:'Цифри ростуть? Корону поправила, продовжуй!'},
+ death:{empty:'Я на лікарняному, а твій дедлайн — ні.',busy:'Записала дедлайни. Косу поки відклала.',books:'Цю книгу ще рано ховати. Пиши!',stats:'Статистика жива. Це підозріло.'},
+ mummy:{empty:'Я проспала три тисячі років. Ти теж?',busy:'Плани є. Тепер би каву й виконати їх.',books:'Навіть папіруси дописували швидше!',stats:'Ці цифри треба відсвяткувати... водичкою.'},
+ demoness:{empty:'У МЕНЕ НЕРВОВИЙ ЗРИВ, А В ТЕБЕ ЗРИВ ДЕДЛАЙНУ! ДЕ ГЛАВА?!',busy:'Дедлайни є. НЕРВИ НЕ ВИТРИМАЮТЬ!',books:'Ти пишеш книгу чи випробовуєш мої нерви?!',stats:'Цифри! Мені потрібні гарні цифри!'}
+};
+function companionMarkup(context){
+ const t=AUTHOR_THEMES.find(t=>t.id===document.body.dataset.authorTheme)||AUTHOR_THEMES[0];
+ const lines=COMPANION_LINES[t.id],today=localISO(new Date());
+ const future=state.plans.filter(p=>p.date>=today&&!p.done).sort((a,b)=>a.date.localeCompare(b.date));
+ const relevant=context==='calendar'?state.plans.filter(p=>p.date===selectedDate):state.plans.filter(p=>p.date===today);
+ let msg=context==='books'?lines.books:context==='stats'?lines.stats:relevant.length?lines.busy:lines.empty;
+ if(context==='today'&&future.length){const next=future[0];const days=Math.round((dayDate(next.date)-dayDate(today))/86400000);if(days<=1)msg=`${days===0?'СЬОГОДНІ':'ЗАВТРА'}: ${next.title}! ${lines.busy}`}
+ return `<div class="companion-art"><img src="./characters/${t.id}.webp" alt="${t.name}" loading="lazy"></div><div class="companion-bubble"><span class="companion-label">✦ Твій авторський друг · ${t.name}</span><p>${escapeHtml(msg)}</p><button type="button" class="companion-talk">Ще репліку ↻</button></div>`;
+}
+function renderCompanions(){for(const [id,context] of [['calendarMascot','calendar'],['todayCompanion','today'],['booksCompanion','books'],['statsCompanion','stats']]){const el=$('#'+id);if(!el)continue;el.className='companion-stage';el.innerHTML=companionMarkup(context);el.querySelector('.companion-talk').onclick=()=>{const t=document.body.dataset.authorTheme;const q=AUTHOR_THEMES.find(x=>x.id===t)?.quote||'';el.querySelector('.companion-bubble p').textContent=q}}}
 $('#calendarPrev').onclick=()=>moveCalendar(-1);
 $('#calendarNext').onclick=()=>moveCalendar(1);
 $('#calendarToday').onclick=()=>{selectedDate=todayISO();renderCalendar()};
@@ -309,7 +327,7 @@ $('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{
 $('#resetBtn').onclick=()=>{if(confirm('Очистити всі дані додатка?')){state.books=[];state.plans=[];state.stats=[];save()}};
 ['ideasBtn','contentBtn'].forEach(id=>$('#'+id).onclick=()=>alert('Цей розділ підготуємо у наступній версії.'));
 
-function renderAll(){setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms()}
+function renderAll(){setTheme();renderToday();renderCalendar();renderBooks();renderStats();prepareForms();renderCompanions()}
 renderAll();
 
 
@@ -343,5 +361,5 @@ async function renderWriting(){const el=$('#writingToday');if(!el)return;const r
 async function renderSOS(){const el=$('#sosAlerts');if(!el)return;const chapters=await storeAll('chapters'),today=localDay();let alerts=[];for(const b of state.books){if(['Завершено','Заморожено','Ідея'].includes(b.status))continue;const pubs=state.plans.filter(p=>p.bookId===b.id&&p.autoPublication&&!p.done).sort((a,z)=>a.date.localeCompare(z.date));if(!pubs.length)continue;const ready=new Set(chapters.filter(c=>c.bookId===b.id&&c.ready).map(c=>c.order));const firstMissing=pubs.find(p=>!ready.has(p.chapterOrder));if(!firstMissing)continue;const gap=Math.ceil((new Date(firstMissing.date+'T12:00:00')-new Date(today+'T12:00:00'))/86400000);if(gap<=7)alerts.push(`<div class="sos-card"><b>🚨 СОС, ДИБІЛ, СКОРО КІНЕЦЬ СВІТУ!</b><p>«${escapeHtml(b.title)}»: глава ${firstMissing.chapterOrder} ще не готова. ${gap<0?'Публікація прострочена!':gap===0?'Публікація сьогодні!':`До виходу ${gap} дн.`}</p></div>`)}el.innerHTML=alerts.join('')}
 // Резервна копія включає нові рукописи та статистику написання.
 $('#exportBtn').onclick=async()=>downloadJSON({...state,manuscriptChapters:await storeAll('chapters'),writingHistory:await storeAll('writing'),backupVersion:2},'miy-avtor-backup-v2.json');
-$('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.books)||!Array.isArray(data.plans)||!Array.isArray(data.stats))throw Error('Невірний формат');if(!confirm('Імпорт замінить поточні книги, плани й статистику. Продовжити?'))return;for(const c of data.manuscriptChapters||[])await storePut('chapters',c);for(const w of data.writingHistory||[])await storePut('writing',w);for(const k of ['books','plans','stats','theme'])if(data[k]!==undefined)state[k]=data[k];save();refreshAuthorWidgets();alert('Дані відновлено')}catch(err){alert('Не вдалося імпортувати: '+err.message)}};
+$('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.books)||!Array.isArray(data.plans)||!Array.isArray(data.stats))throw Error('Невірний формат');if(!confirm('Імпорт замінить поточні книги, плани й статистику. Продовжити?'))return;for(const c of data.manuscriptChapters||[])await storePut('chapters',c);for(const w of data.writingHistory||[])await storePut('writing',w);for(const k of ['books','plans','stats','theme','authorTheme'])if(data[k]!==undefined)state[k]=data[k];save();refreshAuthorWidgets();alert('Дані відновлено')}catch(err){alert('Не вдалося імпортувати: '+err.message)}};
 refreshAuthorWidgets().catch(err=>console.error('Помилка локальної бази',err));
